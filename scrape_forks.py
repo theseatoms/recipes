@@ -1,10 +1,12 @@
-#dumps Script that will traverse all forks of LarryMad/recipies,
+from __future__ import print_function
+
+# script that will traverse all forks of LarryMad/recipies,
 #                  collect unique recipies,
 #                  and save them in a directory in this repo
 
 #TODO:  define unique-ness by file contents, vs filename (first implementation)
 
-#TODO: pagination of forks data.... am i getting all forks?......
+#TODO: pagination of forks data... am i getting all forks?
 
 import json
 import urllib2
@@ -26,16 +28,29 @@ def api_url(query_url):
 # -------------------------------------------------------------
 
 #access_token = <FILL IN>
+#TODO implement authentication
 
 data = api("/repos/LarryMad/recipes")
 larry_forks_url = data["forks_url"]
 larry_forks_data = api_url(larry_forks_url)
 
+filename = "recipe_paths"
+
+
 for fork_data in larry_forks_data:
     GET_sha = "/repos/" + fork_data["full_name"] + "/git/refs/"
-    print "\n\n", GET_sha
+    print("\n\n", GET_sha)
     data = api(GET_sha)
-    sha = data["sha"]
+    print(data)
+    sha = -1
+    for dat in data:
+        if dat["ref"] == "refs/heads/master":
+            sha = dat["object"]["sha"]
+            break
+    if sha == -1:
+        print("no 'refs/heads/master' found")
+        continue
+
 
     GET_commit = "/repos/" + fork_data["full_name"] + "/git/commits/" + sha
     data = api(GET_commit)
@@ -48,9 +63,16 @@ for fork_data in larry_forks_data:
     paths = [] 
 
     for file_data in data["tree"]:
-        path.append( file_data["path"] )
+        #print(file_data["path"], file=f)
+        
+        f = open(filename,'a')
+        f.write(file_data["path"]+'\n') 
+        f.close()
+         
+        paths.append( file_data["path"] )
+        
+        
         # pick it up from here...............................TODO TODO TODO 
-    
      
     # get recipes content
     # write recipes 
