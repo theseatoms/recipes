@@ -10,9 +10,33 @@ from __future__ import print_function
 import os
 import json
 import urllib2
-from requests_oauthlib import OAuth2Session
+#from requests_oauthlib import OAuth2Session
+import config
+import requests
+from requests.auth import HTTPBasicAuth
+
+# authenticate user
+try:
+    requests.get('https://api.github.com/user', auth=HTTPBasicAuth('theseatoms', config.PASSWORD))
+except requests.exceptions.ConnectionError as e:
+    print(e.args)
+    print(e.args[0])
+
+# -----
 
 def api(REST_call):
+    api_root = "https://api.github.com"
+    query_url = api_root + REST_call 
+    
+    response = requests.get(query_url, auth=('theseatoms', config.PASSWORD))
+    return json.loads(response.text)
+
+def api_url(query_url):
+    response = requests.get(query_url, auth=('theseatoms', config.PASSWORD))
+    return json.loads(response.text)
+
+'''
+def old_api(REST_call):
     api_root = "https://api.github.com"
     query_url = api_root + REST_call 
 
@@ -20,25 +44,13 @@ def api(REST_call):
     response = urllib2.urlopen(req)
     return json.loads(response.read())
 
-def api_url(query_url):
+def old_api_url(query_url):
     req = urllib2.Request(query_url)
     response = urllib2.urlopen(req)
     return json.loads(response.read())
-
+'''
 # -------------------------------------------------------------
 
-import config
-import requests
-from requests.auth import HTTPBasicAuth
-
-try:
-    requests.get('https://api.github.com/user', auth=HTTPBasicAuth('theseatoms', config.PASSWORD))
-except requests.exceptions.ConnectionError as e:
-    print(e.args)
-    print("\n\n")
-    print(e.args[0])
-
-# -----
 
 data = api("/repos/LarryMad/recipes")
 larry_forks_url = data["forks_url"]
