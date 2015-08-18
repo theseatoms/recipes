@@ -54,7 +54,14 @@ def old_api_url(query_url):
 
 data = api("/repos/LarryMad/recipes")
 larry_forks_url = data["forks_url"]
+
 larry_forks_data = api_url(larry_forks_url)
+
+'''
+print(json.dumps(larry_forks_data, indent=4))
+print(larry_forks_data[0]["next"])
+gerd = raw_input()
+'''
 
 output_filename = "recipe_paths"
 
@@ -90,8 +97,10 @@ for fork_data in larry_forks_data:
         
         GET_contents = "/repos/" + fork_data["full_name"] + "/contents/" + file_data["path"]
         contents = api(GET_contents)
-        
+                
         owner = fork_data["full_name"].split("/")[0]
+        # owner = fork_data["owner"]["login"]
+        
         new_file_dir = os.getcwd() + "/knives/" + owner + "/"
         new_file_path = os.getcwd() + "/knives/" + owner + "/" + file_data["path"] 
         print(new_file_path)
