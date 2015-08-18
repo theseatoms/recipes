@@ -1,4 +1,5 @@
 knives/
 recipe_paths
 oauth_test.py
-
+basic_auth_test.py
+config.py

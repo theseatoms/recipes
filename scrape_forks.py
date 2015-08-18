@@ -27,14 +27,26 @@ def api_url(query_url):
 
 # -------------------------------------------------------------
 
-#TODO implement authentication
-#access_token = <FILL IN>    # utilize a config file
+import config
+import requests
+from requests.auth import HTTPBasicAuth
+
+try:
+    requests.get('https://api.github.com/user', auth=HTTPBasicAuth('theseatoms', config.PASSWORD))
+except requests.exceptions.ConnectionError as e:
+    print(e.args)
+    print("\n\n")
+    print(e.args[0])
+
+# -----
 
 data = api("/repos/LarryMad/recipes")
 larry_forks_url = data["forks_url"]
 larry_forks_data = api_url(larry_forks_url)
 
 output_filename = "recipe_paths"
+
+print("num of forks: ", len(larry_forks_data))
 
 for fork_data in larry_forks_data:
     GET_sha = "/repos/" + fork_data["full_name"] + "/git/refs/"
@@ -61,8 +73,8 @@ for fork_data in larry_forks_data:
     paths = [] 
 
     for file_data in data["tree"]:
-        print(file_data) 
-        print(file_data["url"])
+        #print(file_data) 
+        #print(file_data["url"])
         
         GET_contents = "/repos/" + fork_data["full_name"] + "/contents/" + file_data["path"]
         contents = api(GET_contents)
