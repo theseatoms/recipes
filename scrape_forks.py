@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import json
 import urllib2
+from requests_oauthlib import OAuth2Session
 
 def api(REST_call):
     api_root = "https://api.github.com"
@@ -27,7 +28,7 @@ def api_url(query_url):
 # -------------------------------------------------------------
 
 #TODO implement authentication
-#access_token = <FILL IN>
+#access_token = <FILL IN>    # utilize a config file
 
 data = api("/repos/LarryMad/recipes")
 larry_forks_url = data["forks_url"]
@@ -64,20 +65,18 @@ for fork_data in larry_forks_data:
         print(file_data["url"])
         
         GET_contents = "/repos/" + fork_data["full_name"] + "/contents/" + file_data["path"]
-        contents = api(GET_file_contents)
-
-        owner = fork_data["full_name"].split("/")[0] # TODO check this
-        print("owner: "+ owner )
+        contents = api(GET_contents)
         
-        new_file_dir = os.getcwd() + "/" + fork_data["full_name"] + "/"
-        new_file_path = os.getcwd() + "/" + fork_data["full_name"] + "/" + file_data["path"] 
+        owner = fork_data["full_name"].split("/")[0]
+        new_file_dir = os.getcwd() + "/knives/" + owner + "/"
+        new_file_path = os.getcwd() + "/knives/" + owner + "/" + file_data["path"] 
         print(new_file_path)
         
         if not os.path.exists(new_file_dir):
             os.makedirs(new_file_dir) 
 
         f = open(new_file_path, 'ab+')
-        f.write(contents) 
+        f.write(urllib2.urlopen(contents["download_url"]).read())
         f.close()
          
         paths.append( file_data["path"] )
