@@ -24,48 +24,56 @@ except requests.exceptions.ConnectionError as e:
 
 # -----
 
-def api(REST_call):
+def api(REST_call, include_header=False):
     api_root = "https://api.github.com"
     query_url = api_root + REST_call 
-    
     response = requests.get(query_url, auth=('theseatoms', config.PASSWORD))
-    return json.loads(response.text)
 
-def api_url(query_url):
+    if include_header:
+        print("\nheader:")
+        print(json.dumps(response.headers, indent=4))
+
+        return (json.loads(json.dumps(dict(response.headers))), json.loads(response.text))
+    else:
+        return json.loads(response.text)
+
+def api_url(query_url, include_header=False):
     response = requests.get(query_url, auth=('theseatoms', config.PASSWORD))
-    return json.loads(response.text)
+    if include_header:
+        print("\nheader:")
+        print(response.headers)
+        
+        print(type(response.headers ))
+        ret1 = json.loads(json.dumps(dict(response.headers)) )
+        ret2 = json.loads(response.text)
+        
+        return (ret1, ret2)
+    else:
+        return json.loads(response.text)
 
-'''
-def old_api(REST_call):
-    api_root = "https://api.github.com"
-    query_url = api_root + REST_call 
-
-    req = urllib2.Request(query_url)
-    response = urllib2.urlopen(req)
-    return json.loads(response.read())
-
-def old_api_url(query_url):
-    req = urllib2.Request(query_url)
-    response = urllib2.urlopen(req)
-    return json.loads(response.read())
-'''
 # -------------------------------------------------------------
-
-
-data = api("/repos/LarryMad/recipes")
-larry_forks_url = data["forks_url"]
-
-larry_forks_data = api_url(larry_forks_url)
-
-'''
-print(json.dumps(larry_forks_data, indent=4))
-print(larry_forks_data[0]["next"])
-gerd = raw_input()
-'''
 
 output_filename = "recipe_paths"
 
+# initial api call, top level repo
+data = api("/repos/LarryMad/recipes")
+larry_forks_url = data["forks_url"]
+
+
+# TODO loop through paginated results
+header, larry_forks_data = api_url(larry_forks_url, include_header=True)
+print(json.dumps(header, indent=4))
+gerd = raw_input()
+
+print(json.dumps(larry_forks_data, indent=4))
+print(larry_forks_data[0].keys())
+
+gerd = raw_input()
+
 print("num of forks: ", len(larry_forks_data))
+
+gerd = raw_input()
+
 
 for fork_data in larry_forks_data:
     GET_sha = "/repos/" + fork_data["full_name"] + "/git/refs/"
