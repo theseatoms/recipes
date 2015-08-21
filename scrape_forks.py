@@ -58,14 +58,51 @@ def build_direction_dict(header):
     return directions_dict
 
 def download_content(forks_data):
-   pass 
+    GET_sha = "/repos/" + forks_data["full_name"] + "/git/refs/"
+    data = api(GET_sha)
+    
+    sha = -1
+    for dat in data:
+        if dat["ref"] == "refs/heads/master":
+            sha = dat["object"]["sha"]
+            break
+    if sha == -1:
+        print("no 'refs/heads/master' found for " + str(forks_data) + "\n" + str(dat))
+        return
 
+    GET_commit = "/repos/" + forks_data["full_name"] + "/git/commits/" + sha
+    data = api(GET_commit)
+    tree_sha = data["tree"]["sha"] # why? to ensure latest, "master" branch
+
+    GET_tree = "/repos/" + forks_data["full_name"] + "/git/trees/" + tree_sha
+    data = api(GET_tree)
+
+    paths = [] 
+
+    for file_data in data["tree"]:
+        GET_contents = "/repos/" + forks_data["full_name"] + "/contents/" + file_data["path"]
+        contents = api(GET_contents)
+                
+        owner = forks_data["full_name"].split("/")[0]
+        # owner = forks_data["owner"]["login"]
+        
+        new_file_dir = os.getcwd() + "/knives/" + owner + "/"
+        new_file_path = os.getcwd() + "/knives/" + owner + "/" + file_data["path"] 
+        print("new file :", new_file_path)
+        
+        if not os.path.exists(new_file_dir):
+            os.makedirs(new_file_dir) 
+
+        f = open(new_file_path, 'ab+')
+        f.write(urllib2.urlopen(contents["download_url"]).read())
+        f.close()
+         
+        paths.append( file_data["path"] )
 
 
 
 # -------------------------------------------------------------
 
-output_filename = "recipe_paths"
 
 # initial api call, top level repo
 data = api("/repos/LarryMad/recipes")
